@@ -1,0 +1,56 @@
+from flask import Flask, render_template, request, redirect, session, url_for
+
+app = Flask(__name__)
+app.secret_key = "riska_secret"
+
+# Dummy users database
+users = {
+    "stu101": {"password": "1234", "role": "student"},
+    "stu102": {"password": "abcd", "role": "student"},
+    "admin1": {"password": "admin", "role": "admin"}
+}
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user_id = request.form["id"]
+        password = request.form["password"]
+
+        user = users.get(user_id)
+
+        if user and user["password"] == password:
+            session["user"] = user_id
+            session["role"] = user["role"]
+
+            if user["role"] == "admin":
+                return redirect("/admin")
+            else:
+                return redirect("/dashboard")
+        else:
+            return render_template("login.html", error="Invalid credentials")
+
+    return render_template("login.html")
+
+
+@app.route("/dashboard")
+def dashboard():
+    if "user" not in session:
+        return redirect("/")
+    return render_template("dashboard.html", user=session["user"])
+
+
+@app.route("/admin")
+def admin():
+    if session.get("role") != "admin":
+        return redirect("/")
+    return render_template("admin.html", user=session["user"])
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
