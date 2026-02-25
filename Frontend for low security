@@ -1,0 +1,63 @@
+ADMIN.HTML
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body { font-family: Arial; background:#fafafa; text-align:center; padding-top:80px;}
+        a { text-decoration:none; color:white; background:black; padding:10px 20px;}
+    </style>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <p>Welcome {{ user }}</p>
+    <p>You have admin privileges.</p>
+    <a href="/logout">Logout</a>
+</body>
+</html>
+
+DASHBOARD.HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial; background:#fafafa; text-align:center; padding-top:80px;}
+        a { text-decoration:none; color:white; background:black; padding:10px 20px;}
+    </style>
+</head>
+<body>
+    <h1>Welcome {{ user }}</h1>
+    <p>You are logged in as Student</p>
+    <a href="/logout">Logout</a>
+</body>
+</html>
+
+LOGIN.HTML
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Riska Nova Login</title>
+    <style>
+        body { font-family: Arial; background:#f4f4f4; display:flex; height:100vh; align-items:center; justify-content:center;}
+        .box { background:white; padding:30px; border-radius:8px; width:300px; text-align:center;}
+        input { width:100%; padding:10px; margin:8px 0;}
+        button { background:black; color:white; padding:10px; width:100%; border:none;}
+        h2 { margin-bottom:15px; }
+        .error { color:red; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>Riska Nova</h2>
+    <form method="POST">
+        <input name="id" placeholder="Student ID" required>
+        <input name="password" type="password" placeholder="Password" required>
+        <button>Login</button>
+    </form>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+</div>
+</body>
+</html>
