@@ -1,0 +1,80 @@
+
+from flask import Flask, render_template, request, redirect, session
+import random
+import datetime
+
+app = Flask(__name__)
+app.secret_key = "riskanova_secret_key"
+
+# Default User
+users = {
+    "admin": {"password": "admin123", "role": "administrator"}
+}
+
+# Risk Logic
+def calculate_risk():
+    hour = datetime.datetime.now().hour
+
+    if hour < 6 or hour > 22:
+        return "high"
+
+    if random.randint(1, 10) > 7:
+        return "medium"
+
+    return "low"
+
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if username in users and users[username]["password"] == password:
+            risk = calculate_risk()
+            session["username"] = username
+            session["risk"] = risk
+
+            if risk == "low":
+                return redirect("/dashboard")
+
+            elif risk == "medium":
+                otp = str(random.randint(100000, 999999))
+                session["otp"] = otp
+                print("OTP:", otp)  # Check console
+                return redirect("/otp")
+
+            else:
+                return "<h3>Access Blocked: High Risk Login</h3>"
+
+        return "<h3>Invalid Credentials</h3>"
+
+    return render_template("login.html")
+
+
+@app.route("/otp", methods=["GET", "POST"])
+def otp():
+    if request.method == "POST":
+        if request.form["otp"] == session.get("otp"):
+            return redirect("/dashboard")
+        return "<h3>Invalid OTP</h3>"
+
+    return render_template("otp.html")
+
+
+@app.route("/dashboard")
+def dashboard():
+    if "username" not in session:
+        return redirect("/")
+
+    return render_template("dashboard.html", user=session["username"])
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
