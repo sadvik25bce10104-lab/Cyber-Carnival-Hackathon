@@ -1,0 +1,54 @@
+from flask import Flask, render_template, request, redirect, session
+
+app = Flask(_name_)
+app.secret_key = "riskanova_secret_key"
+
+# Mock Database with Trusted IPs
+USERS = {
+    "admin_alice": {"pw": "secure123", "role": "admin", "trusted_ip": "127.0.0.1"},
+    "user_bob": {"pw": "hello456", "role": "user", "trusted_ip": "192.168.1.1"}
+}
+
+def evaluate_risk(username, current_ip):
+    score = 0
+    user_info = USERS.get(username)
+    # Check if login is from a new location
+    if current_ip != user_info['trusted_ip']:
+        score += 60 
+    # Admins have higher baseline risk
+    if user_info['role'] == 'admin':
+        score += 10
+    return score
+
+@app.route('/')
+def home():
+    return render_template('login.html')
+
+@app.route('/login_process', methods=['POST'])
+def login_process():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    current_ip = request.remote_addr # Gets your local IP
+
+    user = USERS.get(username)
+    if user and user['pw'] == password:
+        risk_score = evaluate_risk(username, current_ip)
+        
+        if risk_score >= 60:
+            # Triggered for Bob because IP won't match
+            return "<h1>MFA REQUIRED</h1><p>Suspicious login detected from " + current_ip + "</p>"
+        
+        session['user'] = username
+        session['role'] = user['role']
+        return redirect('/dashboard')
+    
+    return "<h1>Invalid Credentials</h1>", 401
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user' not in session:
+        return redirect('/')
+    return render_template('dashboard.html', name=session['user'], role=session['role'], ip=request.remote_addr)
+
+if _name_ == '_main_':
+    app.run(debug=True)
